@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 
-function Type() {
+function Brand() {
   const [formData, setFormData] = useState({
     B_id: '',
     B_name: '',
@@ -273,4 +273,4 @@ function Type() {
   );
 }
 
-export default Type;
+export default Brand;
