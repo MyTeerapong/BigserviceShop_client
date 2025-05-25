@@ -4,32 +4,34 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-function Type() {
-  const navigate = useNavigate();
+function Dealer() {
+      const navigate = useNavigate();
 
     useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-    }
-  }, [navigate]);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+      }
+    }, [navigate]);
+  
 
-  const [items, setItems] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-
-  const getconfig = () => {
+    const getconfig = () => {
     const token = localStorage.getItem('token');
     return {
       headers: { Authorization: `Bearer ${token}` },
     };
   };
 
+  const [items, setItems] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const fetchItems = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/type/get', getconfig());
+      const res = await axios.get('http://localhost:3000/api/dealer/get' ,getconfig());
       setItems(res.data);
     } catch (err) {
       console.error('Fetch items error:', err);
@@ -42,7 +44,7 @@ function Type() {
 
   const handleDelete = (id) => {
     Swal.fire({
-      title: `ลบประเภทสินค้า ${id} ?`,
+      title: `ลบข้อมูลตัวแทนจำหน่าย ${id} ?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'ลบ',
@@ -50,7 +52,7 @@ function Type() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:3000/api/type/delete/${id}`, getconfig());
+          await axios.delete(`http://localhost:3000/api/dealer/delete/${id}` , getconfig());
           Swal.fire('ลบสำเร็จ', '', 'success');
           fetchItems();
           setCurrentPage(1);  // reset page if needed
@@ -62,35 +64,50 @@ function Type() {
     });
   };
 
-  const handleEdit = async (item) => {
-    const { value: newName } = await Swal.fire({
-      title: `แก้ไขชื่อประเภทสินค้า (${item.T_id})`,
-      input: 'text',
-      inputLabel: 'ชื่อประเภทสินค้าใหม่',
-      inputValue: item.T_name,
-      showCancelButton: true,
-      confirmButtonText: 'บันทึก',
-      cancelButtonText: 'ยกเลิก',
-    });
+const handleEdit = async (item) => {
+  const { value: formValues } = await Swal.fire({
+    title: `แก้ไขข้อมูลตัวแทนจำหน่าย (${item.D_id})`,
+    html:
+      `<input id="swal-input1" class="swal2-input" placeholder="ชื่อตัวแทนจำหน่าย" value="${item.D_name}">` +
+      `<input id="swal-input2" class="swal2-input" placeholder="เบอร์โทร" value="${item.D_tel || ''}">` +
+      `<input id="swal-input3" class="swal2-input" placeholder="ที่อยู่" value="${item.D_address || ''}">`,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'บันทึก',
+    cancelButtonText: 'ยกเลิก',
+    preConfirm: () => {
+      const name = document.getElementById('swal-input1').value;
+      const tel = document.getElementById('swal-input2').value;
+      const address = document.getElementById('swal-input3').value;
 
-    if (newName && newName.trim() !== '' && newName !== item.T_name) {
-      try {
-        await axios.put(`http://localhost:3000/api/type/update/${item.T_id}`, {
-          T_name: newName,
-        }, getconfig());
-        Swal.fire('แก้ไขสำเร็จ', '', 'success');
-        fetchItems();
-      } catch (err) {
-        console.error(err);
-        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถแก้ไขข้อมูลได้', 'error');
+      if (!name.trim()) {
+        Swal.showValidationMessage('กรุณากรอกชื่อตัวแทนจำหน่าย');
+        return false;
       }
-    }
-  };
 
+      return { name, tel, address };
+    },
+  });
+
+  if (formValues) {
+    try {
+      await axios.put(`http://localhost:3000/api/dealer/update/${item.D_id}`, {
+        D_name: formValues.name,
+        D_tel: formValues.tel,
+        D_address: formValues.address,
+      } , getconfig());
+      Swal.fire('แก้ไขสำเร็จ', '', 'success');
+      fetchItems();
+    } catch (err) {
+      console.error(err);
+      Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถแก้ไขข้อมูลได้', 'error');
+    }
+  }
+};
   // กรองข้อมูลก่อนแบ่งหน้า
   const filteredItems = items.filter((item) =>
-    item.T_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.T_id.toLowerCase().includes(searchTerm.toLowerCase())
+    item.D_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.D_id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // คำนวณข้อมูลที่จะแสดงในหน้านี้
@@ -108,16 +125,16 @@ function Type() {
     setCurrentPage(pageNumber);
   };
 
-    const handleDownloadReport = async () => {
+  const handleDownloadReport = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/report/type'); 
+      const response = await fetch('http://localhost:3000/api/report/dealer'); 
       if (!response.ok) throw new Error('Failed to download report');
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'report_type.pdf';
+      a.download = 'report_dealer.pdf';
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -130,7 +147,7 @@ function Type() {
 
   return (
     <div className="container-fluid">
-        <h3>รายงานประเภทสินค้า</h3>
+        <h3>รายงานตัวแทนจำหน่าย</h3>
         <button className="btn btn-primary mb-3" onClick={handleDownloadReport}>
         ออกรายงาน PDF
       </button>
@@ -138,10 +155,10 @@ function Type() {
 
       <div className="row mb-3">
         <div className="col-md-4">
-          <label className="form-label">ค้นหาประเภทสินค้า</label>
+          <label className="form-label">ค้นหาตัวแทนจำหน่าย</label>
           <input
             type="text"
-            placeholder="ค้นหารหัสหรือชื่อประเภทสินค้า"
+            placeholder="ค้นหารหัสหรือชื่อตัวแทนจำหน่าย"
             className="form-control"
             value={searchTerm}
             onChange={(e) => {
@@ -155,8 +172,10 @@ function Type() {
       <table className="table table-striped">
         <thead>
           <tr>
-            <th>รหัสประเภทสินค้า</th>
-            <th>ชื่อประเภทสินค้า</th>
+            <th>รหัสตัวแทนจำหน่าย</th>
+            <th>ชื่อตัวแทนจำหน่าย</th>
+            <th>เบอร์โทร</th>
+            <th>ที่อยู่</th>
             <th>จัดการ</th>
           </tr>
         </thead>
@@ -164,8 +183,10 @@ function Type() {
           {currentItems.length > 0 ? (
             currentItems.map((item, index) => (
               <tr key={index}>
-                <td>{item.T_id}</td>
-                <td>{item.T_name}</td>
+                <td>{item.D_id}</td>
+                <td>{item.D_name}</td>
+                <td>{item.D_tel}</td>
+                <td>{item.D_address}</td>
                 <td>
                   <button
                     className="btn btn-sm btn-warning me-2"
@@ -175,7 +196,7 @@ function Type() {
                   </button>
                   <button
                     className="btn btn-sm btn-danger"
-                    onClick={() => handleDelete(item.T_id)}
+                    onClick={() => handleDelete(item.D_id)}
                   >
                     ลบ
                   </button>
@@ -184,7 +205,7 @@ function Type() {
             ))
           ) : (
             <tr>
-              <td colSpan="3" className="text-center text-muted">
+              <td colSpan="5" className="text-center text-muted">
                 ไม่พบข้อมูล
               </td>
             </tr>
@@ -216,4 +237,4 @@ function Type() {
   );
 }
 
-export default Type;
+export default Dealer;
