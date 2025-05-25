@@ -68,12 +68,15 @@ function DashboardLayoutBasic(props) {
     { kind: 'divider' },
     { kind: 'header', title: 'พิมพ์รายงาน' },
     {
-      segment: 'reports',
+      segment: '',
       title: 'รายงาน',
       icon: <BarChartIcon />,
       children: [
-        { segment: 'sales', title: 'Sales', icon: <BarChartIcon /> },
-        { segment: 'traffic', title: 'Traffic', icon: <BarChartIcon /> },
+        { segment: 'report_type', title: 'รายงานประเภทสินค้า', icon: <BarChartIcon /> },
+        { segment: 'report_brand', title: 'รายงานยี่ห้อสินค้า', icon: <BarChartIcon /> },
+        { segment: 'report_product', title: 'รายงานสินค้า', icon: <BarChartIcon /> },
+        { segment: 'report_employee', title: 'รายงานพนักงาน', icon: <BarChartIcon /> },
+        { segment: 'report_dealer', title: 'รายงานตัวแทนจำหน่าย', icon: <BarChartIcon /> },
       ],
     },
     {

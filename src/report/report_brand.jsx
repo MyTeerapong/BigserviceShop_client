@@ -3,33 +3,34 @@ import Swal from 'sweetalert2';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
-function Type() {
-  const navigate = useNavigate();
+function Brand() {
+        const navigate = useNavigate();
 
     useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-    }
-  }, [navigate]);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+      }
+    }, [navigate]);
+  
 
-  const [items, setItems] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
-
-  const getconfig = () => {
+    const getconfig = () => {
     const token = localStorage.getItem('token');
     return {
       headers: { Authorization: `Bearer ${token}` },
     };
   };
 
+  const [items, setItems] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const fetchItems = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/type/get', getconfig());
+      const res = await axios.get('http://localhost:3000/api/brand/get' , getconfig());
       setItems(res.data);
     } catch (err) {
       console.error('Fetch items error:', err);
@@ -42,7 +43,7 @@ function Type() {
 
   const handleDelete = (id) => {
     Swal.fire({
-      title: `ลบประเภทสินค้า ${id} ?`,
+      title: `ลบยี่ห้อสินค้า ${id} ?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'ลบ',
@@ -50,7 +51,7 @@ function Type() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:3000/api/type/delete/${id}`, getconfig());
+          await axios.delete(`http://localhost:3000/api/brand/delete/${id}` , getconfig());
           Swal.fire('ลบสำเร็จ', '', 'success');
           fetchItems();
           setCurrentPage(1);  // reset page if needed
@@ -64,20 +65,20 @@ function Type() {
 
   const handleEdit = async (item) => {
     const { value: newName } = await Swal.fire({
-      title: `แก้ไขชื่อประเภทสินค้า (${item.T_id})`,
+      title: `แก้ไขชื่อประเภทสินค้า (${item.B_id})`,
       input: 'text',
-      inputLabel: 'ชื่อประเภทสินค้าใหม่',
-      inputValue: item.T_name,
+      inputLabel: 'ชื่อยี่ห้อสินค้าใหม่',
+      inputValue: item.B_name,
       showCancelButton: true,
       confirmButtonText: 'บันทึก',
       cancelButtonText: 'ยกเลิก',
     });
 
-    if (newName && newName.trim() !== '' && newName !== item.T_name) {
+    if (newName && newName.trim() !== '' && newName !== item.B_name) {
       try {
-        await axios.put(`http://localhost:3000/api/type/update/${item.T_id}`, {
-          T_name: newName,
-        }, getconfig());
+        await axios.put(`http://localhost:3000/api/brand/update/${item.B_id}`, {
+          B_name: newName,
+        } , getconfig());
         Swal.fire('แก้ไขสำเร็จ', '', 'success');
         fetchItems();
       } catch (err) {
@@ -89,8 +90,8 @@ function Type() {
 
   // กรองข้อมูลก่อนแบ่งหน้า
   const filteredItems = items.filter((item) =>
-    item.T_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.T_id.toLowerCase().includes(searchTerm.toLowerCase())
+    item.B_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.B_id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // คำนวณข้อมูลที่จะแสดงในหน้านี้
@@ -108,16 +109,16 @@ function Type() {
     setCurrentPage(pageNumber);
   };
 
-    const handleDownloadReport = async () => {
+  const handleDownloadReport = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/report/type'); 
+      const response = await fetch('http://localhost:3000/api/report/brand'); 
       if (!response.ok) throw new Error('Failed to download report');
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'report_type.pdf';
+      a.download = 'report_brand.pdf';
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -128,9 +129,10 @@ function Type() {
     }
   };
 
+
   return (
     <div className="container-fluid">
-        <h3>รายงานประเภทสินค้า</h3>
+        <h3>รายงานยี่ห้อสินค้า</h3>
         <button className="btn btn-primary mb-3" onClick={handleDownloadReport}>
         ออกรายงาน PDF
       </button>
@@ -138,10 +140,10 @@ function Type() {
 
       <div className="row mb-3">
         <div className="col-md-4">
-          <label className="form-label">ค้นหาประเภทสินค้า</label>
+          <label className="form-label">ค้นหายี่ห้อสินค้า</label>
           <input
             type="text"
-            placeholder="ค้นหารหัสหรือชื่อประเภทสินค้า"
+            placeholder="ค้นหารหัสหรือชื่อยี่ห้อสินค้า"
             className="form-control"
             value={searchTerm}
             onChange={(e) => {
@@ -155,8 +157,8 @@ function Type() {
       <table className="table table-striped">
         <thead>
           <tr>
-            <th>รหัสประเภทสินค้า</th>
-            <th>ชื่อประเภทสินค้า</th>
+            <th>รหัสยี่ห้อสินค้า</th>
+            <th>ชื่อยี่ห้อสินค้า</th>
             <th>จัดการ</th>
           </tr>
         </thead>
@@ -164,8 +166,8 @@ function Type() {
           {currentItems.length > 0 ? (
             currentItems.map((item, index) => (
               <tr key={index}>
-                <td>{item.T_id}</td>
-                <td>{item.T_name}</td>
+                <td>{item.B_id}</td>
+                <td>{item.B_name}</td>
                 <td>
                   <button
                     className="btn btn-sm btn-warning me-2"
@@ -175,7 +177,7 @@ function Type() {
                   </button>
                   <button
                     className="btn btn-sm btn-danger"
-                    onClick={() => handleDelete(item.T_id)}
+                    onClick={() => handleDelete(item.B_id)}
                   >
                     ลบ
                   </button>
@@ -216,4 +218,4 @@ function Type() {
   );
 }
 
-export default Type;
+export default Brand;

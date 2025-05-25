@@ -18,6 +18,13 @@ import Sale from './Stock/Sale/sale';
 import InsertSale from './Stock/Sale/insertsale';
 import EditSale from './Stock/Sale/editSale';
 import Logout from './Auth/logout';
+
+import ReportType from './report/report_type';
+import ReportBrand from './report/report_brand';
+import ReportProduct from './report/report_product';
+import ReportEmployee from './report/report_employee';
+import ReportDealer from './report/report_dealer';
+
 function App() {
   return (
     <Routes>
@@ -44,6 +51,12 @@ function App() {
         <Route path="insertReceive" element={<InsertReceive />} />
         <Route path="editReceive/:R_id" element={<EditReceive />} />
         <Route path="logout" element={<Logout />} />
+
+        <Route path="report_type" element={<ReportType />} />
+        <Route path="report_brand" element={<ReportBrand />} />
+        <Route path="report_product" element={<ReportProduct />} />
+        <Route path="report_employee" element={<ReportEmployee />} />
+        <Route path="report_dealer" element={<ReportDealer />} />
       </Route>
     </Routes>
   );
