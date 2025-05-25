@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function Product() {
   const [formData, setFormData] = useState({
@@ -18,6 +19,22 @@ function Product() {
   const [Type, setType] = useState([]);
   const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+
+    useEffect(() => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+      }
+    }, [navigate]);
+  
+
+    const getconfig = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: { Authorization: `Bearer ${token}` },
+    };
+  };
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -25,7 +42,7 @@ function Product() {
 
   const fetchBrands = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/brand/get'); 
+      const res = await axios.get('http://localhost:3000/api/brand/get', getconfig()); 
       setBrands(res.data);
     } catch (error) {
       console.error('Fetch brands error:', error);
@@ -34,7 +51,7 @@ function Product() {
 
   const fetchType = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/type/get'); 
+      const res = await axios.get('http://localhost:3000/api/type/get', getconfig()); 
       setType(res.data);
     } catch (error) {
       console.error('Fetch brands error:', error);
@@ -43,7 +60,7 @@ function Product() {
 
   const fetchNewId = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/product/getNewId');
+      const res = await axios.get('http://localhost:3000/api/product/getNewId', getconfig());
       setFormData(prev => ({ ...prev, P_id: res.data.P_id }));
       console.log('New ID fetched:', res.data.P_id);
     } catch (err) {
@@ -58,7 +75,7 @@ function Product() {
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/product/get');
+      const res = await axios.get('http://localhost:3000/api/product/get', getconfig());
       setItems(res.data);
     } catch (err) {
       console.error('Fetch items error:', err);
@@ -149,7 +166,7 @@ function Product() {
       P_detail: formData.P_detail,
       T_id: formData.T_id,
       B_id: formData.B_id,
-    });
+    }, getconfig());
 
       Swal.fire({
         title: 'บันทึกข้อมูลสำเร็จ',
@@ -182,7 +199,7 @@ function Product() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:3000/api/product/delete/${id}`);
+          await axios.delete(`http://localhost:3000/api/product/delete/${id}`, getconfig());
           Swal.fire('ลบสำเร็จ', '', 'success');
           fetchItems();
           fetchNewId();
@@ -229,7 +246,7 @@ const handleEdit = async (item) => {
 
   if (formValues) {
     try {
-      await axios.put(`http://localhost:3000/api/product/update/${item.P_id}`, formValues);
+      await axios.put(`http://localhost:3000/api/product/update/${item.P_id}`, formValues, getconfig());
       Swal.fire('แก้ไขสำเร็จ', '', 'success');
       fetchItems();
     } catch (err) {

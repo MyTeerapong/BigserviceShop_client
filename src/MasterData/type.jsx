@@ -2,38 +2,48 @@ import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function Type() {
   const [formData, setFormData] = useState({
     T_id: '',
     T_name: '',
   });
+  const navigate = useNavigate();
+
+    useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  const getconfig = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: { Authorization: `Bearer ${token}` },
+    };
+  };
 
   const fetchNewId = async () => {
     try {
       const res = await axios.get('http://localhost:3000/api/type/getNewId');
       setFormData(prev => ({ ...prev, T_id: res.data.T_id }));
-      console.log('New ID fetched:', res.data.T_id);
     } catch (err) {
-      console.error('Fetch new ID error:', err);
-      Swal.fire({
-        title: 'ไม่สามารถดึงรหัสอัตโนมัติได้',
-        icon: 'error',
-        confirmButtonText: 'OK',
-      });
+      console.error(err);
+      Swal.fire({ title: 'ไม่สามารถดึงรหัสอัตโนมัติได้', icon: 'error', confirmButtonText: 'OK' });
     }
   };
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/type/get');
+      const res = await axios.get('http://localhost:3000/api/type/get', getconfig());
       setItems(res.data);
     } catch (err) {
       console.error('Fetch items error:', err);
@@ -68,7 +78,7 @@ function Type() {
       await axios.post('http://localhost:3000/api/type/insert', {
         T_id: formData.T_id,
         T_name: formData.T_name,
-      });
+      }, getconfig());
 
       Swal.fire({
         title: 'บันทึกข้อมูลสำเร็จ',
@@ -101,7 +111,7 @@ function Type() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:3000/api/type/delete/${id}`);
+          await axios.delete(`http://localhost:3000/api/type/delete/${id}`, getconfig());
           Swal.fire('ลบสำเร็จ', '', 'success');
           fetchItems();
           fetchNewId();
@@ -129,7 +139,7 @@ function Type() {
       try {
         await axios.put(`http://localhost:3000/api/type/update/${item.T_id}`, {
           T_name: newName,
-        });
+        }, getconfig());
         Swal.fire('แก้ไขสำเร็จ', '', 'success');
         fetchItems();
       } catch (err) {

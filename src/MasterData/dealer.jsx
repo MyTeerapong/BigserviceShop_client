@@ -2,8 +2,25 @@ import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-function Brand() {
+function Dealer() {
+      const navigate = useNavigate();
+
+    useEffect(() => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+      }
+    }, [navigate]);
+  
+
+    const getconfig = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: { Authorization: `Bearer ${token}` },
+    };
+  };
   const [formData, setFormData] = useState({
     D_id: '',
     D_name: '',
@@ -20,7 +37,7 @@ function Brand() {
 
   const fetchNewId = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/dealer/getNewId');
+      const res = await axios.get('http://localhost:3000/api/dealer/getNewId', getconfig());
       setFormData(prev => ({ ...prev, D_id: res.data.D_id }));
       console.log('New ID fetched:', res.data.D_id);
     } catch (err) {
@@ -35,7 +52,7 @@ function Brand() {
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/dealer/get');
+      const res = await axios.get('http://localhost:3000/api/dealer/get' ,getconfig());
       setItems(res.data);
     } catch (err) {
       console.error('Fetch items error:', err);
@@ -88,7 +105,7 @@ function Brand() {
         D_name: formData.D_name,
         D_address: formData.D_address,
         D_tel: formData.D_tel,
-      });
+      } , getconfig());
 
       Swal.fire({
         title: 'บันทึกข้อมูลสำเร็จ',
@@ -121,7 +138,7 @@ function Brand() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:3000/api/dealer/delete/${id}`);
+          await axios.delete(`http://localhost:3000/api/dealer/delete/${id}` , getconfig());
           Swal.fire('ลบสำเร็จ', '', 'success');
           fetchItems();
           fetchNewId();
@@ -165,7 +182,7 @@ const handleEdit = async (item) => {
         D_name: formValues.name,
         D_tel: formValues.tel,
         D_address: formValues.address,
-      });
+      } , getconfig());
       Swal.fire('แก้ไขสำเร็จ', '', 'success');
       fetchItems();
     } catch (err) {
@@ -336,4 +353,4 @@ const handleEdit = async (item) => {
   );
 }
 
-export default Brand;
+export default Dealer;

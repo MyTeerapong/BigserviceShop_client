@@ -2,8 +2,25 @@ import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
-
+import { useNavigate } from 'react-router-dom';
 function Brand() {
+        const navigate = useNavigate();
+
+    useEffect(() => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+      }
+    }, [navigate]);
+  
+
+    const getconfig = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: { Authorization: `Bearer ${token}` },
+    };
+  };
+
   const [formData, setFormData] = useState({
     B_id: '',
     B_name: '',
@@ -18,7 +35,7 @@ function Brand() {
 
   const fetchNewId = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/brand/getNewId');
+      const res = await axios.get('http://localhost:3000/api/brand/getNewId', getconfig());
       setFormData(prev => ({ ...prev, B_id: res.data.B_id }));
       console.log('New ID fetched:', res.data.B_id);
     } catch (err) {
@@ -33,7 +50,7 @@ function Brand() {
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/brand/get');
+      const res = await axios.get('http://localhost:3000/api/brand/get' , getconfig());
       setItems(res.data);
     } catch (err) {
       console.error('Fetch items error:', err);
@@ -68,7 +85,7 @@ function Brand() {
       await axios.post('http://localhost:3000/api/brand/insert', {
         B_id: formData.B_id,
         B_name: formData.B_name,
-      });
+      } , getconfig());
 
       Swal.fire({
         title: 'บันทึกข้อมูลสำเร็จ',
@@ -101,7 +118,7 @@ function Brand() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:3000/api/brand/delete/${id}`);
+          await axios.delete(`http://localhost:3000/api/brand/delete/${id}` , getconfig());
           Swal.fire('ลบสำเร็จ', '', 'success');
           fetchItems();
           fetchNewId();
@@ -129,7 +146,7 @@ function Brand() {
       try {
         await axios.put(`http://localhost:3000/api/brand/update/${item.B_id}`, {
           B_name: newName,
-        });
+        } , getconfig());
         Swal.fire('แก้ไขสำเร็จ', '', 'success');
         fetchItems();
       } catch (err) {

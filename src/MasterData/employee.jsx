@@ -2,8 +2,26 @@ import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function Employee() {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+      }
+    }, [navigate]);
+  
+
+    const getconfig = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: { Authorization: `Bearer ${token}` },
+    };
+  };
+
   const [formData, setFormData] = useState({
     Em_id: '',
     Em_name: '',
@@ -24,7 +42,7 @@ function Employee() {
 
   const fetchNewId = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/employee/getNewId');
+      const res = await axios.get('http://localhost:3000/api/employee/getNewId', getconfig());
       setFormData(prev => ({ ...prev, Em_id: res.data.Em_id }));
       console.log('New ID fetched:', res.data.Em_id);
     } catch (err) {
@@ -39,7 +57,7 @@ function Employee() {
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/employee/get');
+      const res = await axios.get('http://localhost:3000/api/employee/get', getconfig());
       setItems(res.data);
     } catch (err) {
       console.error('Fetch items error:', err);
@@ -137,7 +155,7 @@ function Employee() {
         Em_username: formData.Em_username,
         Em_password: formData.Em_password,
         Em_status: formData.Em_status,
-    });
+    } , getconfig());
 
       Swal.fire({
         title: 'บันทึกข้อมูลสำเร็จ',
@@ -170,7 +188,7 @@ function Employee() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:3000/api/employee/delete/${id}`);
+          await axios.delete(`http://localhost:3000/api/employee/delete/${id}`, getconfig());
           Swal.fire('ลบสำเร็จ', '', 'success');
           fetchItems();
           fetchNewId();
@@ -224,7 +242,7 @@ const handleEdit = async (item) => {
 
   if (formValues) {
     try {
-      await axios.put(`http://localhost:3000/api/employee/update/${item.Em_id}`, formValues);
+      await axios.put(`http://localhost:3000/api/employee/update/${item.Em_id}`, formValues, getconfig());
       Swal.fire('แก้ไขสำเร็จ', '', 'success');
       fetchItems();
     } catch (err) {
